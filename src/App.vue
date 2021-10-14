@@ -1,80 +1,106 @@
 <template>
   <div class="container m-auto text-center">
-    <h1 class="">PokeGuía</h1>
-    <label for="nombre">Nombre </label>
-    <input
-      type="text"
-      v-model="nombrePokemon"
-      :placeholder="dataPokemon.name"
-    />
-    <button type="button" @click="buscaPokemon">Buscar</button>
-  </div>
-  <div class="container text-center">
-    <h3>{{ dataPokemon.name }}</h3>
+    <img class="w-25" alt="img_pokemon" src="./assets/logo2.png" />
+    <h2>PokeGuía</h2>
 
-    <div class="d-flex my-5">
-      <div class="w-50 mx-3">
-        <h4>Imagen</h4>
-        <img
-          class="border"
-          alt="pokemon"
-          :src="dataPokemon.sprites.back_default"
-        />
-      </div>
-
-      <ul class="list-group w-50 mx-3">
-        <h4>Habilidades</h4>
-        <li
-          class="list-group-item"
-          v-for="(item, index) of dataPokemon.abilities"
-          :key="index"
-        >
-          {{ item.ability.name }}
-        </li>
-      </ul>
-
-      <ul class="list-group w-50 mx-3">
-        <h4>Movimientos</h4>
-        <li
-          class="list-group-item"
-          v-for="(item, index) of dataPokemon.moves"
-          :key="index"
-        >
-          {{ item.move.name }}
-        </li>
-      </ul>
+    <div class="my-3">
+      <input
+        type="text"
+        class="form-control w-25 m-auto"
+        v-model="nombrePokemon"
+        placeholder="Nombre Pokemon"
+        @keyup.enter="buscaPokemon"
+      />
     </div>
+    <button type="button" @click="buscaPokemon" class="btn btn-primary">
+      Buscar
+    </button>
+  </div>
+
+  <div class="container my-5 text-center d-flex">
+    <div class="w-50">
+      <h4 class="text-uppercase">{{ nombre }}</h4>
+      <img class="border" alt="pokemon" :src="imagen" />
+    </div>
+
+    <ul class="w-50">
+      <h4 class="text-uppercase">Habilidades</h4>
+      <li v-for="(habilidad, index) of habilidades" :key="index">
+        {{ habilidad.ability.name }}
+      </li>
+    </ul>
+
+    <ul class="w-50">
+      <h4 class="text-uppercase">Movimientos</h4>
+      <li v-for="(movimiento, index) of movimientos" :key="index">
+        {{ movimiento.move.name }}
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
 export default {
   name: "App",
+
   data() {
     return {
       nombrePokemon: "",
-      defaultPokemon: "pikachu",
-      dataPokemon: "",
+      dataPokemon: {
+        name: "",
+        abilities: [],
+        moves: [],
+      },
     };
   },
+
   created() {
-    console.log("carga Created");
-    fetch("https://pokeapi.co/api/v2/pokemon/" + this.defaultPokemon)
-      .then((response) => response.json())
-      .then((response) => (this.dataPokemon = response));
+    this.buscaPokemon();
   },
+
   methods: {
-    buscaPokemon() {
-      fetch("https://pokeapi.co/api/v2/pokemon/" + this.nombrePokemon)
-        .then((response) => response.json())
-        .then((response) => (this.dataPokemon = response));
-      return this.dataPokemon;
+    async buscaPokemon() {
+      try {
+        const response = await fetch(this.url);
+        const data = await response.json();
+        this.dataPokemon = data;
+      } catch (error) {
+        console.log(`Error: ${error}`);
+      }
+    },
+  },
+
+  computed: {
+    url() {
+      return this.nombrePokemon == ""
+        ? `${this.baseUrl}pikachu`
+        : `${this.baseUrl}${this.nombrePokemon}`;
+    },
+    baseUrl() {
+      return "https://pokeapi.co/api/v2/pokemon/";
+    },
+    nombre() {
+      return this.dataPokemon.name;
+    },
+    habilidades() {
+      return this.dataPokemon.abilities;
+    },
+    movimientos() {
+      return this.dataPokemon.moves.slice(0, 10);
+    },
+    imagen() {
+      return this.dataPokemon.sprites.back_default;
     },
   },
 };
 </script>
 
-
-
 <style>
+ul {
+  list-style: none;
+}
+
+img {
+  /* width: 10%; */
+}
 </style>
